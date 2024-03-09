@@ -29,20 +29,22 @@ jobs:
           su builder -c "git clone https://github.com/materialgram/materialgram-bin /home/builder/build && cd /home/builder/build && makepkg --syncdeps --noconfirm --needed"
 
       - name: Set filename as variable
-        id: set-filename
-        run: echo "::set-output name=filename::$(basename /home/builder/build/*.zst)"
+        run: echo "FILENAME=$(basename /home/builder/build/*.zst)" >> $GITHUB_ENV
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.set-filename.outputs.filename }}
+          name: ${{ env.FILENAME }}
           path: /home/builder/build/*.zst
       
       - name: UPLOAD TO GITHUB RELEASES
         run: |
           echo $PAT | gh auth login --with-token
           export VERSION=$(cat /home/builder/build/PKGBUILD | grep 'pkgver=' | cut -d'=' -f2)
-          export FILE_NAME=${{ steps.set-filename.outputs.filename }}
-          gh release create ${VERSION} /home/builder/build/${FILE_NAME} --repo materialgram/materialgram-bin
-
+          git config --global user.email "omansh11597@gmail.com"
+          git config --global user.name "Omansh Krishn"
+          git config --global --add safe.directory /home/builder/build
+          git -C '/home/builder/build' tag -a ${VERSION} -m ${VERSION} 
+          git -C '/home/builder/build' push "https://omansh-krishn:${PAT}@github.com/materialgram/materialgram-bin.git" ${VERSION}
+          gh release create ${VERSION} /home/builder/build/${{ env.FILENAME }} --repo materialgram/materialgram-bin
 
