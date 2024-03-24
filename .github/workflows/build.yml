@@ -41,10 +41,5 @@ jobs:
         run: |
           echo $PAT | gh auth login --with-token
           export VERSION=$(cat /home/builder/build/PKGBUILD | grep 'pkgver=' | cut -d'=' -f2)
-          git config --global user.email "omansh11597@gmail.com"
-          git config --global user.name "Omansh Krishn"
-          git config --global --add safe.directory /home/builder/build
-          git -C '/home/builder/build' tag -a ${VERSION} -m ${VERSION} 
-          git -C '/home/builder/build' push "https://omansh-krishn:${PAT}@github.com/materialgram/materialgram-bin.git" ${VERSION}
-          gh release create ${VERSION} /home/builder/build/${{ env.FILENAME }} --repo materialgram/materialgram-bin
+          gh release create ${VERSION} /home/builder/build/${{ env.FILENAME }} --repo materialgram/materialgram-bin --notes ${VERSION}
 
