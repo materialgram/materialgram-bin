@@ -1,9 +1,9 @@
 # Maintainer: omansh-krishn <omanshkrishn@duck.com>
 # Contributor: westpain <homicide@disroot.org>
 pkgname=materialgram-bin
-pkgver=v4.15.6.1
+pkgver=v4.16.4.1
 pkgrel=1
-pkgdesc="What if Telegram and Google had kids - Static binaries"
+pkgdesc="What if Telegram and Google had kids - Binary Version"
 arch=(x86_64)
 url="https://github.com/kukuruzka165/materialgram"
 license=(GPL3)
@@ -16,7 +16,7 @@ conflicts=('materialgram')
 
 source=( https://github.com/kukuruzka165/materialgram/releases/download/${pkgver}/materialgram-${pkgver}.tar.gz )
 
-sha256sums=('b1f75c56184a5fb74058552b0ea24af8c4d038ddb50c42e63ac403b4f6661ead')
+sha256sums=('1286e78575d13cdb65dbf85ccc40aec25666320372fe92799e6f323cc2afbf05')
 
 package() {
 

@@ -19,7 +19,7 @@ jobs:
           pacman-key --init
           pacman-key --populate archlinux
           pacman -Syu --noconfirm --quiet
-          pacman -S base-devel git sudo github-cli --noconfirm --quiet
+          pacman -S base-devel git sudo --noconfirm --quiet
 
       - name: Add a Build user
         run: |
@@ -52,7 +52,7 @@ jobs:
   
   update-pkg-repo:
     runs-on: ubuntu-latest
-   
+    needs: build
     steps:
 
     - name: Checkout repo
