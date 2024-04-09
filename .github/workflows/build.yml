@@ -1,9 +1,8 @@
 name: Build Package
 
 on:
-  push:
-    branches:
-      - main
+  repository_dispatch:
+    types: [new-release, rebuild]
 
 env:
     PAT: ${{secrets.PAT}}
@@ -22,11 +21,17 @@ jobs:
           pacman -Syu --noconfirm --quiet
           pacman -S base-devel git sudo github-cli --noconfirm --quiet
 
-      - name: Build package
+      - name: Add a Build user
         run: |
           useradd -m builder
           echo "builder ALL=(ALL) NOPASSWD: ALL" | tee -a /etc/sudoers
-          su builder -c "git clone https://github.com/materialgram/materialgram-bin /home/builder/build && cd /home/builder/build && makepkg --syncdeps --noconfirm --needed && rm *debug*"
+          
+      - name: Build PKG
+        run: |
+          su builder -c "git clone https://github.com/materialgram/materialgram-bin /home/builder/build && cd /home/builder/build \
+                         && sed -i "s/pkgver=.*/pkgver=${{ github.event.client_payload.tagname }}/" PKGBUILD \
+                         && sed -i "s/pkgver=.*/pkgver=${{ github.event.client_payload.pkgrel }}/" PKGBUILD \
+                         && updpkgsums && makepkg --syncdeps --noconfirm --needed && rm *debug*"
 
       - name: Set filename as variable
         run: echo "FILENAME=$(basename /home/builder/build/*.zst)" >> $GITHUB_ENV
@@ -37,9 +42,32 @@ jobs:
           name: ${{ env.FILENAME }}
           path: /home/builder/build/*.zst
       
-      - name: UPLOAD TO GITHUB RELEASES
-        run: |
-          echo $PAT | gh auth login --with-token
-          export VERSION=$(cat /home/builder/build/PKGBUILD | grep 'pkgver=' | cut -d'=' -f2)
-          gh release create ${VERSION} /home/builder/build/${{ env.FILENAME }} --repo materialgram/materialgram-bin --notes ${VERSION}
+      - name: Upload artifact to Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/')
+        with:
+          name: ${{ env.FILENAME }}
+          token: ${{ secrets.PAT }}
+          files: /home/builder/build/${{ env.FILENAME }}
+  
+  update-pkg-repo:
+    runs-on: ubuntu-latest
+   
+    steps:
 
+    - name: Checkout repo
+      uses: actions/checkout@v4
+      with:
+        repository: materialgram/arch
+        token: ${{ secrets.repopat }}
+    
+    - name: do the things
+      run: |
+        rm m*
+        TAG=$(curl -s https://api.github.com/repos/materialgram/materialgram-bin/releases/latest | jq -r '.tag_name')
+        BIN=$(curl -s https://api.github.com/repos/materialgram/materialgram-bin/releases/latest | jq -r '.assets[] | .name' | grep zst)
+        URL=https://github.com/materialgram/materialgram-bin/releases/download/${TAG}/${BIN}
+        wget $URL
+        repo-add materialgram.db.tar.gz *zst
+        git config --global user.email "omansh11597@gmail.com" && git config --global user.name "Omansh Krishn" && git add . && git commit -s -m "materialgram: Update ${{ github.event.client_payload.tagname }}-${{ github.event.client_payload.pkgrel }}"
+        git push
