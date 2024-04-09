@@ -19,7 +19,7 @@ jobs:
           pacman-key --init
           pacman-key --populate archlinux
           pacman -Syu --noconfirm --quiet
-          pacman -S base-devel git sudo --noconfirm --quiet
+          pacman -S base-devel git sudo pacman-contrib --noconfirm --quiet
 
       - name: Add a Build user
         run: |
