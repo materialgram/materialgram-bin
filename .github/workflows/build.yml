@@ -19,7 +19,7 @@ jobs:
           pacman-key --init
           pacman-key --populate archlinux
           pacman -Syu --noconfirm --quiet
-          pacman -S base-devel git sudo pacman-contrib --noconfirm --quiet
+          pacman -S base-devel git sudo github-cli pacman-contrib jq --noconfirm --quiet
 
       - name: Add a Build user
         run: |
@@ -33,23 +33,24 @@ jobs:
                          && sed -i "s/pkgrel=.*/pkgrel=${{ github.event.client_payload.pkgrel }}/" PKGBUILD \
                          && updpkgsums && makepkg --syncdeps --noconfirm --needed && rm *debug*"
 
-      - name: Set filename as variable
-        run: echo "FILENAME=$(basename /home/builder/build/*.zst)" >> $GITHUB_ENV
+      - name: Set env variables
+        run: |
+          echo "FILENAME=$(basename /home/builder/build/*.zst)" >> $GITHUB_ENV
+          export TAG=$(curl -s https://api.github.com/repos/materialgram/materialgram-bin/releases/latest | jq -r '.tag_name')
+          echo "CURRENTTAG=$(echo $TAG)" >> $GITHUB_ENV
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.FILENAME }}
           path: /home/builder/build/*.zst
-      
-      - name: Upload artifact to Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/')
-        with:
-          name: ${{ env.FILENAME }}
-          token: ${{ secrets.PAT }}
-          files: /home/builder/build/${{ env.FILENAME }}
-  
+
+      - name:  Upload artifact to Release via gh-cli
+        run: |
+          echo $PAT | gh auth login --with-token
+          if [ "${{ env.CURRENTTAG }}" == "${{ github.event.client_payload.tagname }}-${{ github.event.client_payload.pkgrel }}" ]; then gh release delete ${{ env.CURRENTTAG }} --repo materialgram/materialgram-bin -y; fi
+          gh release create ${{ github.event.client_payload.tagname }}-${{ github.event.client_payload.pkgrel }} /home/builder/build/${{ env.FILENAME }} --repo materialgram/materialgram-bin --notes ${{ github.event.client_payload.tagname }}
+
   update-pkg-repo:
     runs-on: ubuntu-latest
     needs: build
