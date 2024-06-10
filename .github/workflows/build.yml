@@ -77,3 +77,17 @@ jobs:
         repo-add materialgram.db.tar.gz *zst
         git config --global --add safe.directory /__w/materialgram-bin/materialgram-bin && git config --global user.email "omansh11597@gmail.com" && git config --global user.name "Omansh Krishn" && git add . && git commit -s -m "materialgram: Update ${{ github.event.client_payload.tagname }}-${{ github.event.client_payload.pkgrel }}"
         git push
+
+  update-source-repo:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+      with:
+        repository: materialgram/materialgram
+        token: ${{ secrets.PAT }}
+    - name: Fetch and Update
+      run: |
+        git remote add upstream https://github.com/kukuruzka165/materialgram && git pull upstream main
+        git branch -m old && git checkout --track upstream/main && git push origin main -f
+
