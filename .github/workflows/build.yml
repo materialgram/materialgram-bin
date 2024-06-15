@@ -18,7 +18,7 @@ jobs:
         run: |
           pacman-key --init
           pacman-key --populate archlinux
-          pacman -S base-devel git sudo github-cli pacman-contrib jq --noconfirm --quiet
+          pacman -Sy base-devel git sudo github-cli pacman-contrib jq --noconfirm --quiet
           pacman -Syu --noconfirm
           pacman -Scc --noconfirm
 
