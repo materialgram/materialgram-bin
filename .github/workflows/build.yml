@@ -11,7 +11,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: archlinux:latest
+      image: archlinux/archlinux:latest
 
     steps:
       - name: Update system and install dependencies
@@ -55,7 +55,7 @@ jobs:
   update-pkg-repo:
     runs-on: ubuntu-latest
     container:
-      image: archlinux:latest
+      image: archlinux/archlinux:latest
 
     needs: build
     steps:
