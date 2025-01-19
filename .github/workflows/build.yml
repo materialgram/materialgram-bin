@@ -20,7 +20,7 @@ jobs:
           pacman-key --populate archlinux
           pacman -Sy base-devel git sudo github-cli pacman-contrib jq --noconfirm --quiet
           pacman -Syu --noconfirm
-          pacman -Scc --noconfirm
+          yes | pacman -Scc
 
       - name: Add a Build user
         run: |
@@ -30,6 +30,7 @@ jobs:
       - name: Build PKG
         run: |
           sed -i '/^OPTIONS=/ s/\<debug\>/!debug/g' /etc/makepkg.conf
+          sed -i 's/^COMPRESSZST=.*/COMPRESSZST=(zstd -c -T0 --ultra -22 -)/' /etc/makepkg.conf
           su builder -c "git clone https://github.com/materialgram/materialgram-bin /home/builder/build && cd /home/builder/build \
                          && sed -i "s/pkgver=.*/pkgver=${{ github.event.client_payload.tagname }}/" PKGBUILD \
                          && sed -i "s/pkgrel=.*/pkgrel=${{ github.event.client_payload.pkgrel }}/" PKGBUILD \
