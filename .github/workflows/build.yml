@@ -93,3 +93,13 @@ jobs:
         git remote add upstream https://github.com/kukuruzka165/materialgram && git pull upstream main
         git branch -m old && git checkout --track upstream/main && git push origin main -f
 
+  trigger-workflow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger RPM repository dispatch event
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.bvPAT }}
+          repository: burhancodes/materialgram-rpm
+          event-type: new-release
+
