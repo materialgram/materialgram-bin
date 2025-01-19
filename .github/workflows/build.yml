@@ -76,7 +76,7 @@ jobs:
         URL=https://github.com/materialgram/materialgram-bin/releases/download/${TAG}/${BIN}
         wget $URL
         repo-add materialgram.db.tar.gz *zst
-        git config --global --add safe.directory /__w/materialgram-bin/materialgram-bin && git config --global user.email "omansh11597@gmail.com" && git config --global user.name "Omansh Krishn" && git add . && git commit -s -m "materialgram: Update ${{ github.event.client_payload.tagname }}-${{ github.event.client_payload.pkgrel }}"
+        git config --global --add safe.directory '*' && git config --global user.email "omansh@duck.com" && git config --global user.name "Omansh Krishn" && git add . && git commit -s -m "materialgram: Update ${{ github.event.client_payload.tagname }}-${{ github.event.client_payload.pkgrel }}"
         git push
 
   update-source-repo:
